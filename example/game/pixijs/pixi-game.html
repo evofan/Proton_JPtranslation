@@ -1,0 +1,360 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>pixi.js game</title>
+    <meta name="viewport" id="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta charset="utf-8">
+    <style type="text/css">
+        body {
+            background-color: #333333;
+            margin: 0px;
+            overflow: hidden;
+        }
+
+        .shadow {
+            box-shadow: 0 0 25px #000;
+        }
+
+        #container {
+            width: 1003px;
+            height: 580px;
+            margin-top: 50px;
+            margin-left: -501px;
+            left: 50%;
+            position: absolute;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container" class="shadow">
+    </div>
+    <script src="../../lib/stats.min.js"></script>
+    <script src="../../lib/pixi.min.js"></script>
+    <script src="../../lib/pixi-spine.js"></script>
+    <script src="../../lib/TweenLite.min.js"></script>
+    <script src="../../../build/proton.js"></script>
+    <script>
+        var app; // Pixiアプリケーション
+        var container; // コンテナ（：DisplayObject）
+        var proton; // Proton（protonのインスタンス、：Proton）
+        var renderer; // Pixiレンダラー
+        var smokeEmitter; // 煙のエミッター 
+        var coinEmitter; // コインのエミッター
+        var glodFrame; // コインの連番画像（：Array）
+        var jumpOver = false; // ジャンプ中かどうかのフラグ（：boolean）
+        var postition = 0, // 位置（背景移動に使用）
+            pixie, // 妖精（キャラ、：Sprite）
+            background, // 背景のスプライト
+            background2, // 背景2のスプライト
+            foreground, // 前景のスプライト
+            foreground2; // 前景2のスプライト
+
+        main(); // メインを実行
+
+        /**
+         * メイン
+         */
+        function main() {
+            initPIXI(); // PIXIの初期化実行
+            loadAssets(); // アセットのロード実行
+        }
+
+        /**
+         * PixiJSの初期化 
+         **/
+        function initPIXI() {
+            app = new PIXI.Application(1003, 580, { backgroundColor: 0x1099bb }); // PIXIアプリ生成
+            container = document.getElementById('container'); // コンテナを取得
+            container.appendChild(app.view); // コンテナをアプリのviewに追加
+
+            app.stop(); // 一旦レンダリングを停止しておく
+        }
+
+        /**
+         * アセットのロード
+         **/
+        function loadAssets() {
+            PIXI.loader
+                .add('pixie', 'assets/Pixie.json') // キャラクターデータ（Spine）
+                .add('gold', 'image/gold_anim.json') // コイン画像
+                .load(onAssetsLoaded); // アセットをロードする
+        }
+
+        /**
+         * ロード完了のコールバック
+         * @param { onject } loader 
+         * @param { object } res 
+         */
+        function onAssetsLoaded(loader, res) {
+
+            addBackground(loader, res); // 背景を追加
+            addPixie(loader, res); // 妖精を追加
+            addGlodAnim(loader, res); // 連番コインアニメを追加
+
+            addPixiEventListener(); // イベントリスナーを登録
+
+            app.start(); // レンダリングを開始
+            app.ticker.add(tick); // レンダリングの更新を行うためのティッカーを登録
+
+            addProton(); // Proton（パーティクルライブラリ）を追加
+            addRain(); // 雨（アニメーション）を追加
+            addSmoke(); // 煙（アニメーション）を追加
+            addCoin(); // コイン（アニメーション）を追加
+        }
+
+        /**
+         * イベントリスナーを登録
+         */
+        function addPixiEventListener() {
+            app.stage.interactive = true; // ステージがイベントを取得出来るように
+            app.stage.on('pointerdown', onTouchStart); // マウス（タッチ）イベントをステージに登録
+        }
+
+        /**
+         * タッチイベントのコールバック
+         */
+        function onTouchStart() {
+            if (jumpOver) return; // ジャンプ中であれば返す
+
+            pixie.state.setAnimation(0, 'jump', false); // 妖精をトラック0で、「jump」のアニメーションを再生
+            pixie.state.addAnimation(0, 'running', true, 0); // ↑の再生完了後、妖精をトラック0で、「running」のアニメーションを再生、ループ有、delay0秒で
+
+            smokeEmitter.p.x = pixie.x; // 煙エミッターのp？のx座標を、妖精のx座標に
+            coinEmitter.p.x = pixie.x + 20; // コインエミッターのp？のx座標を、妖精のx座標+20に
+
+            smokeEmitter.emit('once'); // 煙エミッターを一回生成？
+            coinEmitter.emit(.5); // コインエミッターを0.5秒遅れで生成？
+
+            TweenLite.to(pixie, .5, { // TweenLiteを使用してアニメーションを再生する、対象は妖精、0.5秒掛けて、yを490に（上にジャンプしたように見える）、
+                y: 490,
+                onComplete: function () {
+                    TweenLite.to(pixie, .2, { y: 530 }); // アニメーションを再生完了で、妖精を0.2秒掛けて、yを530に（下に着地したように見える）
+                }
+            });
+
+            setTimeout(function () { jumpOver = false }, 1000); // 1秒後に二重に飛ばせるのを禁止解除
+            jumpOver = true; // trueでジャンプ中に
+        }
+
+        /**
+         * 背景を追加する
+         * @param { object } loader 
+         * @param { object } res 
+         */
+        function addBackground(loader, res) {
+            background = PIXI.Sprite.fromImage('assets/iP4_BGtile.jpg'); // 背景に背景画像（森の中）を追加
+            background2 = PIXI.Sprite.fromImage('assets/iP4_BGtile.jpg'); // 背景2に同じ画像を追加（重ねてズラして動かして、スクロールしているように見せる）
+
+            foreground = PIXI.Sprite.fromImage('assets/iP4_ground.png'); // 前景に前景画像（花壇みたいな画像）を追加
+            foreground2 = PIXI.Sprite.fromImage('assets/iP4_ground.png'); // 前回2に同じ画像を追加
+            foreground.y = foreground2.y = 640 - foreground2.height; // 前景と前景2のy座標は、640-前景2の高さ（179）＝ 461？、※現状画面にこの画像は表示されてない？
+
+            app.stage.addChild(background, background2, foreground, foreground2); // 背景と前景の画像をステージに追加
+        }
+
+        /**
+         * 妖精（Spineのキャラクター）を追加する
+         * @param {*} loader 
+         * @param {*} res 
+         */
+        function addPixie(loader, res) {
+
+            pixie = new PIXI.spine.Spine(res.pixie.spineData); // 読み込んだデータのテクスチャから妖精のスプライトを作成
+            pixie.x = 1024 / 3 + 100; // 妖精のx座標を設定
+            pixie.y = 530; // 妖精のy座標を設定
+            pixie.scale.x = pixie.scale.y = .22; // 元サイズの22%のサイズに（元は画面から頭が出る位大きい）
+
+            app.stage.addChild(pixie); // 妖精をステージに追加
+
+            // http://ja.esotericsoftware.com/spine-applying-animations
+            // アニメーションの適用
+            pixie.stateData.setMix('running', 'jump', 0.2); // 妖精のミックス（クロスフェード）アニメーションを設定する、「running」-> 「jump」変更時は0.2秒でXフェード
+            pixie.stateData.setMix('jump', 'running', 0.4); // 妖精のミックス（クロスフェード）アニメーションを設定する、「jump」-> 「running」変更時は0.2秒でXフェード
+            pixie.state.setAnimation(0, 'running', true); // 妖精のトラック0のアニメーションを設定する（トラック0、アニメーション名「running」、ループする）
+        }
+
+        /**
+         * コインのアニメーションを追加する
+         */
+        function addGlodAnim() {
+            var frames = []; // 空フレームの配列を用意する
+            for (var i = 1; i <= 6; i++) { // 6個分（コインの連番画像数）
+                frames.push(PIXI.Texture.fromFrame('gold_' + i + '.png')); // の画像を配列に格納する
+            }
+            glodFrame = frames; // コイン画像の配列にコピー
+        }
+
+        /**
+         * Protonオブジェクト（各エミッターの親）を追加する
+         */
+        function addProton() {
+
+            proton = new Proton; // 新規Protonインスタンスを作成
+            renderer = new Proton.PixiRenderer(app.stage); // ★レンダラーにpixiのstageを指定
+
+            var create = renderer.pool.create; // ★レンダラーにpoolオブジェクトを作成？
+            renderer.pool.create = function (body, particle) {
+                if (body.name == 'COIN') { // 本体の名前が「COIN」であれば
+                    var glodAnim = new PIXI.extras.AnimatedSprite(glodFrame); // Animatedスプライトでコインの連番配列を指定
+                    glodAnim.anchor.set(0.5); // 中心点を0.5に設定
+                    glodAnim.animationSpeed = 0.4; // コインのアニメーション速度は0.4（元の2/5）に
+                    glodAnim.play(); // コインアニメーションを再生
+                    return glodAnim; // コインアニメーションを返す＝★連番アニメをパーティクルとして返す？
+                } else {
+                    return create.call(proton.pool, body, particle); //「COIN」で無ければproton.poolに本体名、パーティクルを返す？
+                }
+            }
+
+            proton.addRenderer(renderer); // Protonにレンダラーを追加する
+        }
+
+        /**
+         * コインエミッターを追加する
+         */
+        function addCoin() {
+
+            coinEmitter = new Proton.Emitter(); // コインエミッターは新規Protonエミッターとして生成
+            coinEmitter.rate = new Proton.Rate(new Proton.Span(2, 3), .1); // コインエミッターのレートを設定
+
+            coinEmitter.addInitialize(new Proton.Body({ name: 'COIN' })); // Body（本体＝使用するアセット画像）
+            coinEmitter.addInitialize(new Proton.Mass(1)); // Mass…質量？
+            coinEmitter.addInitialize(new Proton.Life(1.3)); // Life…生存期間？
+            coinEmitter.addInitialize(new Proton.Velocity(new Proton.Span(3, 5), new Proton.Span(0, 60, true), 'polar')); // 速度を設定する？
+
+            coinEmitter.addBehaviour(new Proton.Rotate(Proton.getSpan(0, 360), new Proton.Span([-1, -2, 0, 1, 2]), 'add')); // 回転（角度）を設定する？
+            //coinEmitter.addBehaviour(new Proton.Alpha(1, 0));
+            coinEmitter.addBehaviour(new Proton.Gravity(6)); // 重力を設定する？
+            coinEmitter.addBehaviour(new Proton.Scale(Proton.getSpan(.2, .5))); // スケールを設定する？
+
+            coinEmitter.p.y = 250; // コインエミッターのp（パーティクル？）のy座標は250
+            proton.addEmitter(coinEmitter); // protonにコインエミッターを追加する
+        }
+
+        /**
+         * 雨エミッターを追加する
+         */
+        function addRain() {
+
+            var emitter = new Proton.Emitter(); // （雨）エミッターは新規Protonエミッター
+            emitter.rate = new Proton.Rate(new Proton.Span(15, 22), new Proton.Span(.1, .3)); // 雨エミッターのレートを設定する（中身は煙のレートを参照） 
+
+            // （雨）エミッターを初期化
+            emitter.addInitialize(new Proton.Body('./image/rain.png')); // Body（本体＝使用するアセット画像）
+            emitter.addInitialize(new Proton.Mass(1)); // Mass…質量？
+            emitter.addInitialize(new Proton.Life(1, 2)); // Life…生存期間？
+
+            var y = 60; // 
+            var d = 800; // 
+            emitter.addInitialize(new Proton.Position(new Proton.LineZone(130, y, app.stage.width + d, y)));// 位置を設定する？
+            emitter.addInitialize(new Proton.Velocity(new Proton.Span(6, 12), -130, 'polar')); // 速度を設定する？
+
+            // パーティクルに動作を追加します。
+            // Behaviors array：emitter.addBehaviour（Behaviour1、Behaviour2、Behaviour3）;を使用出来ます。
+            emitter.addBehaviour(new Proton.Alpha(Proton.getSpan(1, 0))); // 透明度を設定する？
+            emitter.addBehaviour(new Proton.Rotate(130)); // 回転（角度）を設定する？
+            emitter.addBehaviour(new Proton.Scale(Proton.getSpan(.2, .6))); // スケールを設定する？
+
+            y = app.stage.height - 100; // yはPIXIのステージの高さから-100の値
+            emitter.addBehaviour(new Proton.CrossZone(new Proton.LineZone(-1000, y, app.stage.width + 1000, y, 'down'), 'dead'));
+            // Proton.CrossZone：パーティクルが指定されたゾーンの終わりに来た場合に何が起こるかを定義します
+
+            emitter.emit(); // エミッターを開始する（妖精のジャンプタイミングに合わせなくていいので）
+            proton.addEmitter(emitter); // proton本体にエミッターを登録する
+            emitter.preEmit(1.2);// エミッターのpreEmit（事前エミット？）を1.2秒に指定する
+        }
+
+        /**
+         * 煙エミッターを追加する
+         */
+        function addSmoke() {
+            smokeEmitter = new Proton.Emitter(); // 煙のProtonエミッターを生成する
+            smokeEmitter.rate = new Proton.Rate(new Proton.Span(6, 8), 1); // 煙のエミッターのレートを設定する、1秒あたりのパーティクル数（a [パーティクル] / b [s]）;
+            //                             Rate(numpan, timepan)
+            //                             numpan	Array | Number | Proton.Span	the number of each emission; 各エミッターの数
+            //                             timepan	Array | Number | Proton.Span    
+            //                                 the time of each emission; 各エミッターの時間
+            //                                  for example: new Proton.Rate(new Proton.Span(10, 20), new Proton.Span(.1, .25));
+             
+            // パーティクルに初期化を追加します。
+            // あなたは初期化配列を使用する事が出来ます：例えば、emitter.addInitialize（initialize1、initialize2、initialize3）;
+            smokeEmitter.addInitialize(new Proton.Body('./image/smoke.png')); // Body（本体＝使用するアセット画像）
+            smokeEmitter.addInitialize(new Proton.Mass(1)); // Mass…質量？
+            smokeEmitter.addInitialize(new Proton.Life(1)); // Life…生存期間、秒数
+            smokeEmitter.addInitialize(new Proton.Velocity(new Proton.Span(.8, 1.2), new Proton.Span(0, 110, true), 'polar')); // 速度を設定？
+
+            smokeEmitter.addBehaviour(new Proton.Rotate(0, new Proton.Span([-1, -2, 0, 1, 2]), 'add')); // 回転（角度）を設定？
+            smokeEmitter.addBehaviour(new Proton.Scale(Proton.getSpan(.1, .3), .7)); // スケールを設定？
+            smokeEmitter.addBehaviour(new Proton.Alpha(1, 0)); // 透明度を設定
+
+            smokeEmitter.p.y = pixie.y; // 煙エミッターのp？のy座標は、妖精のy座標と同じに
+            proton.addEmitter(smokeEmitter); // protonに煙エミッターを追加する
+        }
+
+        /**
+         * フレームを更新する
+         */
+        function tick() {
+            bgRun(); // 背景を動かす
+            proton.update(); // Protonを更新する
+            proton.stats.update(2, container); // Protonのstats？（APIには無いが組み込み？）を更新する
+            // ★↑proton.js内部でcreateClassで作成している、statsはpixi-game.htmlからオリジナルのstatsを読み込んでいる
+            // 「2」
+            // emitter：エミッター数、例：3
+            // em speed：エミッター速度、例：19
+            // pos：0, 0、位置？xy座標
+            // 「3」
+            // initializes: エミッターのinitializesの長さ、例：5
+            //  ↑の中身？例：「B、M、L、P、V」
+            // behaviours： エミッターのbehavioursの長さ、例：4
+            //  ↑の中身？例：「A、R、S、C」
+            // 「4」
+            // renderer.name：レンダラーの名前、例：PixiRenderer
+            // body：レンダラーの数？、例：141
+            //  ↑ return renderer.pool.total || renderer.cpool && renderer.cpool.total || 0;
+            // 「default」
+            //  particles： 例、90-114、パーティクルの表示してる数
+            //  pool： 例、42-63等、パーティクルのpoolに溜まってる数
+            //  total： 例、141、トータルのパーティクルの数？↑の2つを足した数に近い
+
+        }
+
+        /**
+         * 背景画像を動かす
+         */
+        function bgRun() {
+            postition += 10; // 位置座標を+10する
+
+            background.x = -(postition * 0.6); // 背景画像のxは10の0.6倍をマイナスしたもの（約2/3）
+            background.x %= 1286 * 2; // 背景画像の横幅分2倍の剰余を足す？
+            if (background.x < 0) { // 0未満もしくは
+                background.x += 1286 * 2; // 背景画像の横幅の2倍を足す（反対側から出て来る＝無限スクロール）
+            }
+            background.x -= 1286; // 1286引いた位置に 
+
+            background2.x = -(postition * 0.6) + 1286; // 背景2も背景1と同様に算出
+            background2.x %= 1286 * 2; // 
+            if (background2.x < 0) { // 
+                background2.x += 1286 * 2; // 
+            }
+            background2.x -= 1286; // 
+
+            foreground.x = -postition; // 前景のx座標を算出
+            foreground.x %= 1286 * 2; // 
+            if (foreground.x < 0) { // 
+                foreground.x += 1286 * 2; // 
+            }
+            foreground.x -= 1286; // 
+
+            foreground2.x = -postition + 1286; // 前景2のx座標を算出
+            foreground2.x %= 1286 * 2; // 
+            if (foreground2.x < 0) { // 
+                foreground2.x += 1286 * 2; // 
+            }
+            foreground2.x -= 1286; // 
+        }
+    </script>
+</body>
+
+</html>

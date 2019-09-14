@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>Proton</title>
+    <meta name="description" content="List of examples" />
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
+    <div id="index">
+      <h1>Proton JavaScriptのパーティクルエンジン、日本語訳</h1>
+
+      <p>
+        <span class="blue">original page</span><br />
+        <a href="https://a-jie.github.io/Proton/" target="_blank"
+          >Proton javascript particle engine</a>
+      </p>
+
+      <p>
+        上記ライブラリを自分なりに解釈する為に翻訳してメモ。<br />
+        （訳が間違っている可能性もあるので、その場合は原文を当たるなりして下さい）<br />
+      </p>
+
+  <p>----------------------------------------------------------------------------------------------------------------------</p>
+
+    <div id="index">
+      <h2 class="red">※Dcocument（API）</h2>
+      <p><a href="https://projects.jpeer.at/proton/" target="_blank">https://projects.jpeer.at/proton/</a><br>&nbsp;<br>&nbsp;</p>
+    </div>
+
+    <div id="index">
+      <h2 class="red">※GitHub</h2>
+      <p><a href="https://github.com/a-jie/Proton" target="_blank">https://github.com/a-jie/Proton</a><br>&nbsp;<br>&nbsp;</p>
+    </div>
+
+    <div id="index">
+      <h2 class="red">※Three.proton</h2>
+      <p><a href="https://a-jie.github.io/three.proton/" target="_blank">https://a-jie.github.io/three.proton/</a><br>&nbsp;<br>&nbsp;</p>
+    </div>
+
+  <p>----------------------------------------------------------------------------------------------------------------------</p>
+
+      <h4>Easy to use（使い方は簡単）</h4>
+      <p class="leftspace">
+        たった10行のコードで、あなたは非常にクールな効果を達成する事が出来ます。<br>
+        <a
+          href="https://www.71squared.com/particledesigner"
+          target="_blank"
+          >71squaredのParticleDesigner（※Mac専用）</a>のデモのように。
+      </p>
+
+      <h4>Multiple renderer（マルチレンダラ）</h4>
+      <p class="leftspace">
+        Protonはcanvas、DOM、webgl、イーゼルJS（createJS）、<span class="red">PIXI.js</span>の7種類のレンダラーを提供します。<br>
+        もちろんあなた自身のレンダラーをカスタマイズする事が出来ます、それは非常に簡単です。
+      </p>
+
+      <h4>Physics（物理演算）</h4>
+      <p class="leftspace">
+        Protonはさまざまな物理演算と衝突判定を提供します。<br>
+        あなたは簡単に物理的世界をシミュレートする事が出来ます。
+      </p>
+
+    </div>
+
+    <div id="index">
+      <h2>Get started（はじめに）</h2>
+      
+      <p>とても簡単です。たった数十行です！</p>
+
+      <pre>
+
+      var proton = new Proton();
+      var emitter = new Proton.Emitter();
+
+      // set Rate、レートを設定する
+      emitter.rate = new Proton.Rate(Proton.getSpan(10, 20), 0.1);
+
+      // add Initialize、初期設定を追加する
+      emitter.addInitialize(new Proton.Radius(1, 12));
+      emitter.addInitialize(new Proton.Life(2, 4));
+      emitter.addInitialize(new Proton.Velocity(3, Proton.getSpan(0, 360), 'polar'));
+
+      // add Behaviour、ふるまいを追加する
+      emitter.addBehaviour(new Proton.Color('ff0000', 'random'));
+      emitter.addBehaviour(new Proton.Alpha(1, 0));
+
+      // set emitter position、エミッターの位置を設定する
+      emitter.p.x = canvas.width / 2;
+      emitter.p.y = canvas.height / 2;
+      emitter.emit();
+
+      // add emitter to the proton、protonにエミッターを追加する
+      proton.addEmitter(emitter);
+
+      // add canvas renderer、protonにレンダラーを追加する
+      var renderer = new Proton.CanvasRenderer(canvas);
+      proton.addRenderer(renderer);
+
+      </pre>
+
+      <!--<p>完全版のチュートリアルを確認する（リンク切れ）</p>-->
+
+    </div>
+
+    <div id="index">
+      <h2>Notice（お知らせ）</h2>
+      
+      <p>風、雨、または雪を作成する場合は、<u>emit.preEmit</u>メソッドを使用して<br>
+      シーンをプリレンダリングする事が出来ます。</p>
+
+      <p><u>Proton.Body</u>テクスチャと同時に<u>Proton.Color</u>を使用する場合は、<br>
+      CanvasRendererではなく、WebGLRendererを使用する事をお勧めします。</p>
+
+    </div>
+
+    <div id="index">
+      <h2>Examples（使用例）</h2>
+
+      <h3>Sparks、スパーク、爆発系</h3>
+
+      <p>
+      <a href="example/sparks/sun/sun.html" target="_blank">sun<br>
+      <img src="example/images/pic_spark_sun.jpg" width="400" height="200" alt=""/></a><br>
+      炎の爆発するようなパーティクル
+      </p>
+
+      <p>
+      <a href="example/sparks/sun/fireball.html" target="_blank">fireball<br>
+      <img src="example/images/pic_spark_fireball.jpg" width="400" height="200" alt=""/></a><br>
+      単体の炎が燃える感じ
+      </p>
+
+      <p>
+      <a href="example/sparks/eightDiagrams/eightDiagrams.html" target="_blank">eight-diagrams<br>
+      <img src="example/images/pic_spark_eight_diagrams.jpg" width="400" height="200" alt=""/></a><br>
+      8つのダイアグラム、赤と青の炎がお互いの尻尾を追い掛ける感じで回る、クリックすると散る
+      </p>
+
+      <p>
+      <a href="example/sparks/bomb/bomb.html" target="_blank">bomb<br>
+      <img src="example/images/pic_spark_bomb.jpg" width="400" height="200" alt=""/></a><br>
+      爆発、より爆発する感じ
+      </p>
+
+      <p>
+      <a href="example/sparks/drugs/drugs.html" target="_blank">drugs<br>
+      <img src="example/images/pic_spark_drugs.jpg" width="400" height="200" alt=""/></a><br>
+      ドラッグ、七色の炎が爆発する感じ
+      </p>
+
+      <p>
+      <a href="example/sparks/firework/fireworks.html" target="_blank">fireworks<br>
+      <img src="example/images/pic_spark_fireworks.jpg" width="400" height="200" alt=""/></a><br>
+      花火
+      </p>
+
+      <p>
+      <a href="example/sparks/bigfire/bigfire.html" target="_blank">bigfire<br>
+      <img src="example/images/pic_spark_bigfire.jpg" width="400" height="200" alt=""/></a><br>
+      大きい炎、火山の噴火のような感じ
+      </p>
+
+      <h3>Behaviour、振る舞い</h3>
+
+      <p>
+      <a href="example/behaviour/attraction/attraction1.html" target="_blank">attraction<br>
+      <img src="example/images/pic_behaviour_attraction.jpg" width="400" height="200" alt=""/></a><br>
+      引き付ける（引力）、細い花火＋マウスクリック箇所追随
+      </p>
+
+      <p>
+      <a href="example/behaviour/attraction/attraction2.html" target="_blank">gravitation<br>
+      <img src="example/images/pic_behaviour_gravitation.jpg" width="400" height="200" alt=""/></a><br>
+      引き付ける（重力）、細い花火＋重力移動あちこち
+      </p>
+
+
+      <p>
+      <a href="example/behaviour/collision/collision.html" target="_blank">collision<br>
+        <img src="example/images/pic_behaviour_collision.jpg" width="400" height="200" alt=""/></a><br>
+        衝突判定、ボール生成＋衝突＆落下
+      </p>
+
+      <p>
+      <a href="example/behaviour/collision/collisionBall.html" target="_blank">collision-ball<br>
+        <img src="example/images/pic_behaviour_collision_ball.jpg" width="400" height="200" alt=""/></a><br>
+        衝突判定（ボール）、ボール生成＋あちこち流れ星っぽく移動
+      </p>
+
+      <p>
+      <a href="example/behaviour/custom/circle.html" target="_blank">circle<br>
+        <img src="example/images/pic_behaviour_circle.jpg" width="400" height="200" alt=""/></a><br>
+        円、線が渦巻のように伸びていく
+      </p>
+        
+      <p>
+      <a href="example/behaviour/force/star.html" target="_blank">star<br>
+        <img src="example/images/pic_behaviour_star.jpg" width="400" height="200" alt=""/></a><br>
+        星、星が生成された後にクリックした箇所に伸びていく
+      </p>
+
+      <p>
+      <a href="example/behaviour/randomDirft/randomdirft2.html" target="_blank">randomdirft2<br>
+        <img src="example/images/pic_behaviour_drift2.jpg" width="400" height="200" alt=""/></a><br>
+        ランダムな漂流2、植物の根のようなのが伸びていく
+      </p>
+
+      <p>
+      <a href="example/behaviour/randomDirft/randomdirft3.html" target="_blank">randomdirft3<br>
+        <img src="example/images/pic_behaviour_drift3.jpg" width="400" height="200" alt=""/></a><br>
+        ランダムな漂流3、植物の根が青くなったようなのが伸びていく
+      </p>
+
+      <p>
+      <a href="example/behaviour/rotate/rotate.html" target="_blank">rotate<br>
+        <img src="example/images/pic_behaviour_rotate.jpg" width="400" height="200" alt=""/></a><br>
+        回転、矢印アイコンがクリックした箇所から360度花火のように伸びていく
+      </p>
+
+      <p>
+      <a href="example/behaviour/repulsion/fireflies.html" target="_blank">fireflies<br>
+        <img src="example/images/pic_behaviour_fireflies.jpg" width="400" height="200" alt=""/></a><br>
+        蛍、ホタルのような光が舞う
+      </p>
+
+      <p>
+      <a href="example/behaviour/repulsion/repulsion.html" target="_blank">repulsion<br>
+        <img src="example/images/pic_behaviour_repulsion.jpg" width="400" height="200" alt=""/></a><br>
+        反発作用、無数の光が流れるように移動する
+      </p>
+
+      <p>
+      <a href="example/behaviour/color/color.html" target="_blank">color<br>
+        <img src="example/images/pic_behaviour_color.jpg" width="400" height="200" alt=""/></a><br>
+        色、白地に無数のカラーの球が溶け込んでいく
+      </p>
+
+      <p>
+      <a href="example/behaviour/gravitywell/linebug.html" target="_blank">linebug<br>
+        <img src="example/images/pic_behaviour_linebug.jpg" width="400" height="200" alt=""/></a><br>
+        線のバグ、無数のシングルラインが回転したり反射したり、ランダムに移動したりする
+      </p>
+
+      <h3>Game、ゲーム</h3>
+
+      <p>
+      <a href="example/game/colliejs/collie.html" target="_blank">collie<br>
+        <img src="example/images/pic_game_collie.jpg" width="400" height="200" alt=""/></a><br>
+        コリー、キャラクター（コリー犬）のスクロール＋ジャンプ＋衝突
+      </p>
+
+      <p>
+      <a href="example/game/easeljs/easeljs.html" target="_blank">easeljs<br>
+        <img src="example/images/pic_game_easeljs.jpg" width="400" height="200" alt=""/></a><br>
+        easeljs（createJS）、走る人からハートマーク
+      </p>
+      
+      <p>
+      <a href="example/game/pixijs/pixi-game.html" target="_blank">pixijs<br>
+        <img src="example/images/pic_game_pixijs.jpg" width="400" height="200" alt=""/></a><br>
+        <span class="red">PixiJS</span>、キャラクターの移動＋雨・コイン・渦巻生成<br>
+        <span class="red">statsを拡張したviewでパーティクル数や、エミッター数等が見れる</span>
+      </p>
+      
+        <p>
+      <a href="example/game/crafty/asteroids.html" target="_blank">asteroids<br>
+        <img src="example/images/pic_game_asteroids.jpg" width="400" height="200" alt=""/></a><br>
+        小惑星、ロケットの移動＋弾打ち＋噴射
+      </p>
+      
+        <p>
+      <a href="example/game/quarkjs/squirrel.html" target="_blank">quarkjs<br>
+        <img src="example/images/pic_game_quarkjs.jpg" width="400" height="200" alt=""/></a><br>
+        クォーク（粒子）、雨粒＋キャラクター分身
+      </p>
+
+
+      <h3>Renderer、レンダラー別</h3>
+
+      <p>
+      <a href="example/render/pixel/pixelrender.html" target="_blank">pixelrenderer<br>
+        <img src="example/images/pic_render_pixel_render.jpg" width="400" height="200" alt=""/></a><br>
+        ピクセル単位のレンダリング、ピクセル単位で収束したり吸い込まれるような動き
+      </p>
+
+      <p>
+      <a href="example/render/pixel/google.html" target="_blank">pixelrenderer2<br>
+        <img src="example/images/pic_render_pixel2_render.jpg" width="400" height="200" alt=""/></a><br>
+        ピクセル単位のレンダリング2、ピクセル単位で収束したり吸い込まれるような動き、<br>
+        GoogleやTwitterのロゴにモーフィング
+      </p>
+
+        <p>
+      <a href="example/render/pixel/thousand.html" target="_blank">pixelrenderer3<br>
+        <img src="example/images/pic_render_pixel3_render.jpg" width="400" height="200" alt=""/></a><br>
+        ピクセル単位のレンダリング3、ピクセル単位の煙が伸びたりするような動き
+      </p>
+
+        <p>
+      <a href="example/render/dom/canvasVSdom.html" target="_blank">canvasrenderer<br>
+        <img src="example/images/pic_render_dom_canvas.jpg" width="400" height="200" alt=""/></a><br>
+        canvasのレンダリング、Chrome、サファリ、Firefoxのロゴがコインパーティクルのように散らばる動き
+      </p>
+
+              <p>
+      <a href="example/render/dom/domrender.html" target="_blank">domrenderer<br>
+        <img src="example/images/pic_render_dom_dom.jpg" width="400" height="200" alt=""/></a><br>
+        domのレンダリング、Chrome、サファリ、Firefoxのロゴがコインパーティクルのように散らばる動き
+      </p>
+
+      <p>
+      <a href="example/render/easeljs/easeljs.html" target="_blank">easelrenderer<br>
+        <img src="example/images/pic_render_easeljs.jpg" width="400" height="200" alt=""/></a><br>
+        easeljs（createJS）のレンダリング、菜の花がぱらぱら落ちてくるような動き
+      </p>
+
+      <p>
+      <a href="example/render/webgl/webglrender.html" target="_blank">webglrenderer<br>
+        <img src="example/images/pic_render_webgl.jpg" width="400" height="200" alt=""/></a><br>
+        WebGLのレンダリング、光と炎の熱源体が流れるような動き
+      </p>
+
+      <p>
+      <a href="example/render/pixi/pixirender.html" target="_blank">pixirenderer<br>
+        <img src="example/images/pic_render_pixijs.jpg" width="400" height="200" alt=""/></a><br>
+        <span class="red">PixiJSのレンダリング</span>
+      </p>
+
+      <p>
+      <a href="example/render/pixi/pixi-mulirender.html" target="_blank">pixirenderer2<br>
+        <img src="example/images/pic_render_pixijs2.jpg" width="400" height="200" alt=""/></a><br>
+       <span class="red"> PixiJSのレンダリング2</span>、PIXIJS上でキャラが多数ばら撒かれりる動き<br>
+      <span class="red">スペースキーで、変化するプロパティを増やしたり、エンターキーでdestroy()出来る</span>
+      </p>
+
+      <p>
+      <a href="example/render/custom/custom-renderer.html" target="_blank">customrenderer<br>
+        <img src="example/images/pic_render_custom.jpg" width="400" height="200" alt=""/></a><br>
+        カスタムのレンダリング、黒い円がブラウザの中でぶつかったり跳ねたりする動き<br>
+        クリックで円のインスタンスを生成して別ウィンドウで表示出来る
+      </p>
+
+      <h3>Emitter、エミッター</h3>
+
+      <p>
+      <a href="example/helloworld/emitter/emitter.html" target="_blank">emitter<br>
+        <img src="example/images/pic_emitter_emitter.jpg" width="400" height="200" alt=""/></a><br>
+        エミッター、カラフルな円がライン状になって湧き出てくる動き
+      </p>
+
+      <p>
+      <a href="example/emitter/followEmitter/followEmitter.html" target="_blank">follow-emitter<br>
+        <img src="example/images/pic_emitter_follow.jpg" width="400" height="200" alt=""/></a><br>
+        ついていくエミッター、円（加算）がクリックし箇所から生成されて落ちていく動き
+      </p>
+
+      <p>
+      <a href="example/emitter/followEmitter/mouseDown.html" target="_blank">mouse-emitter<br>
+        <img src="example/images/pic_emitter_mousedown.jpg" width="400" height="200" alt=""/></a><br>
+        マウスダウンで発生するエミッター、クリック箇所から青い円が生成されて散っていく動き
+      </p>
+
+      <p>
+      <a href="example/initialize/imagetarget/Spitfire.html" target="_blank">Spitfire<br>
+        <img src="example/images/pic_emitter_spitfire.jpg" width="400" height="200" alt=""/></a><br>
+        スピットファイア、湧き出る炎＋落ちる火花
+      </p>
+
+      <p>
+      <a href="example/initialize/imagetarget/imagetarget.html" target="_blank">imagetarget<br>
+        <img src="example/images/pic_emitter_imagetarget.jpg" width="400" height="200" alt=""/></a><br>
+        画像ターゲット、モノクロの炎パーティクル
+      </p>
+
+      <p>
+      <a href="example/initialize/imagetarget/fire2.html" target="_blank">rock<br>
+        <img src="example/images/pic_emitter_rocket.jpg" width="400" height="200" alt=""/></a><br>
+        ロケット、ロケットの噴射するエフェクト
+      </p>
+
+      <p>
+      <a href="example/initialize/position/bg-particle.html" target="_blank">bg-particle<br>
+        <img src="example/images/pic_emitter_bg.jpg" width="400" height="200" alt=""/></a><br>
+        背景のパーティクル、線画の六面体が回転しつつ繋がるような動き
+      </p>
+
+  <h3>Zone、ゾーン</h3>
+
+      <p>
+      <a href="example/zone/circlezone/circlezone.html" target="_blank">circlezone<br>
+        <img src="example/images/pic_zone_circle.jpg" width="400" height="200" alt=""/></a><br>
+        円のゾーン、文字が湧き出てくる動き
+      </p>
+
+      <p>
+      <a href="example/zone/imagezone/imagezone.html" target="_blank">imagezone<br>
+        <img src="example/images/pic_zone_imagezone.jpg" width="400" height="200" alt=""/></a><br>
+        イメージゾーン、小さい円が湧き出てきて文字を形成
+      </p>
+
+      <p>
+      <a href="example/zone/linezone/bound.html" target="_blank">linezone<br>
+        <img src="example/images/pic_zone_bound.jpg" width="400" height="200" alt=""/></a><br>
+        ラインゾーン、鉄筋のような線が伸びていく動き
+      </p>
+
+      <p>
+      <a href="example/zone/pointzone/pointzone.html" target="_blank">pointzone<br>
+        <img src="example/images/pic_zone_point.jpg" width="400" height="200" alt=""/></a><br>
+        ポイントゾーン、追随する星が全体的に回転する動き
+      </p>
+
+    </div>
+
+    <div id="index">
+      <h2>About（prpton又は作者について）</h2>
+      
+      <p>私は中国の文芸青年です。<br>
+      私は数学、香港漫画、古典小説、nan pai san shuが好きです。</p>
+
+      <p>あなたは私のWeiboをフォローする事が出来ます：<br>
+        http://weibo.com/ajiecn<br>
+        又はメール<br>
+        me ajiemath@gmail.com<br>
+        ありがとうございます！
+        </p>
+
+    </div>
+
+  </body>
+</html>
